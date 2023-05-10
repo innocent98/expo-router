@@ -1,7 +1,7 @@
 {
   "name": "skeleton",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -31,10 +31,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
-  },
-  "overrides": {
-    "metro": "0.76.0",
-    "metro-resolver": "0.76.0"
   },
   "private": true
 }
