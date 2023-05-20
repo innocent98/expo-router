@@ -1,29 +1,18 @@
-import { StatusBar } from "expo-status-bar";
-import { useRef, useState } from "react";
 import {
-  StyleSheet,
-  Text,
   View,
-  Button,
-  TouchableOpacity,
+  Text,
+  StyleSheet,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
-import FlashMessage from "react-native-flash-message";
-import { showMessage } from "react-native-flash-message";
-import { v4 as uuid } from "uuid";
-import Popover from "react-native-popover-view";
-import * as Progress from "react-native-progress";
-import RBSheet from "react-native-raw-bottom-sheet";
-import Carousel from "react-native-reanimated-carousel";
+import React from "react";
 import ExpoFastImage from "expo-fast-image";
 import Hyperlink from "react-native-hyperlink";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import SkeletonContent from "react-native-skeleton-content";
+import FlashMessage from "react-native-flash-message";
+import Carousel from "react-native-reanimated-carousel";
 
-var converter = require("number-to-words");
-
-console.log(uuid());
-console.log(converter.toOrdinal(21));
+// data
 
 const explore = [
   {
@@ -348,59 +337,30 @@ const explore = [
   },
 ];
 
-export default function App() {
-  const refRBSheet = useRef();
-  const width = Dimensions.get("window").width;
+// card component
 
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
-  const [items, setItems] = useState([
-    { label: "Apple", value: "apple" },
-    { label: "Banana", value: "banana" },
-  ]);
+const SLIDER_WIDTH = Dimensions.get("window").width + 80;
+const ITEM_WIDTH = Math.round(SLIDER_WIDTH * 0.7);
+const isCarousel = React.useRef(null);
+
+const CarouselCardItem = ({ item, index }) => {
+  let image =
+    item?.user_id.profile_pic?.indexOf("https") === -1 &&
+    item?.user_id.profile_pic !== null &&
+    item?.user_id.profile_pic !== ""
+      ? `https://mdrn-dev-01.s3.amazonaws.com/media/${item?.user_id.profile_pic}`
+      : item?.user_id.profile_pic;
+  if (item?.user_id.profile_pic === null || item?.user_id.profile_pic === "") {
+    image = null;
+  }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={styles.container}>
-        <StatusBar style="auto" />
-        <DropDownPicker
-          open={open}
-          value={value}
-          items={items}
-          setOpen={setOpen}
-          setValue={setValue}
-          setItems={setItems}
-        />
-
-        {/* flash message */}
-        <Button
-          onPress={() => {
-            /* HERE IS WHERE WE'RE GOING TO SHOW OUR FIRST MESSAGE */
-            showMessage({
-              message: "Simple message with id",
-              description: "This is our second message",
-              type: "success",
-            });
-          }}
-          title="Request Details"
-          color="#841584"
-        />
-
-        {/* popover */}
-        <Popover
-          from={
-            <TouchableOpacity>
-              <Text>Press here to open popover!</Text>
-            </TouchableOpacity>
-          }
-        >
-          <Text>This is the contents of the popover</Text>
-        </Popover>
-
-        {/* progress */}
-        <Progress.Bar progress={0.3} width={200} />
-
-        {/* carousel */}
+    <View style={styles.container}>
+      <SkeletonContent
+        isLoading={refreshing}
+        containerStyle={{ flex: 1, height: "100%" }}
+        layout={[cardLayout]}
+      >
         <Carousel
           loop
           width={width}
@@ -410,12 +370,15 @@ export default function App() {
           scrollAnimationDuration={1000}
           onSnapToItem={(index) => console.log("current index:", index)}
           renderItem={({ item, index }) => (
-            <View style={{ marginTop: 10 }}>
+            <View style={{ marginTop: hp(0) }}>
               <View style={[styles.modalTop, { borderWidth: 0 }]}>
                 <ExpoFastImage
                   style={[styles.modalBackground]}
                   source={{
-                    uri: `https://mdrn-dev-01.s3.amazonaws.com/media/${item?.user_id.profile_pic}`,
+                    uri:
+                      image !== null && image !== ""
+                        ? image
+                        : "https://mdrn-dev-01.s3.amazonaws.com/media/3efa428a-0abc-4455-877b-8fcfe67f1a93.png",
                   }}
                   resizeMode="cover"
                 />
@@ -559,10 +522,10 @@ export default function App() {
                 style={{
                   alignSelf: "center",
                   flexDirection: "row",
-                  marginBottom: "10%",
-                  marginTop: "-8%",
-                  marginRight: 5,
-                  marginLeft: 5,
+                  marginBottom: hp("10%"),
+                  marginTop: hp("-8%"),
+                  marginRight: wp(5),
+                  marginLeft: wp(5),
                   backgroundColor: "white",
                   justifyContent: "space-between",
                 }}
@@ -652,51 +615,15 @@ export default function App() {
             </View>
           )}
         />
-
-        {/* <SkeletonPlaceholder borderRadius={4}> */}
-        {/* <View style={{flexDirection: 'row', alignItems: 'center'}}>
-        <View style={{width: 60, height: 60, borderRadius: 50}} />
-        <View style={{marginLeft: 20}}>
-          <Image style={{width: 120, height: 20}} src={requre('./src/assets/image.png')} />/
-          <Text style={{marginTop: 6, fontSize: 14, lineHeight: 18}}>Hello world</Text>
-        </View>
-      </View> */}
-        {/* </SkeletonPlaceholder> */}
-
-        {/* bottom sheet */}
-        <Button
-          title="OPEN BOTTOM SHEET"
-          onPress={() => refRBSheet.current.open()}
-        />
-        <RBSheet
-          ref={refRBSheet}
-          closeOnDragDown={true}
-          closeOnPressMask={false}
-          customStyles={{
-            wrapper: {
-              backgroundColor: "transparent",
-            },
-            draggableIcon: {
-              backgroundColor: "#000",
-            },
-          }}
-        ></RBSheet>
-
-        {/* GLOBAL FLASH MESSAGE COMPONENT INSTANCE */}
-        <FlashMessage position="top" />
-      </View>
-    </GestureHandlerRootView>
+      </SkeletonContent>
+      <FlashMessage position="top" />
+    </View>
   );
-}
+};
+
+// styles
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
   buttonText: {
     fontFamily: "GilroyBold",
     marginLeft: 3,
@@ -749,8 +676,8 @@ const styles = StyleSheet.create({
     marginRight: "-8%",
   },
   modalTop: {
-    height: 30,
-    width: 90,
+    height: hp(30),
+    width: wp(90),
     alignSelf: "center",
   },
   bio: {
@@ -758,7 +685,7 @@ const styles = StyleSheet.create({
     fontSize: 16.5,
     padding: 2,
     marginBottom: "10%",
-    marginTop: "1%",
+    marginTop: hp("1%"),
     backgroundColor: "#f7faf8",
     marginLeft: 8.5,
     backgroundColor: "white",
@@ -793,10 +720,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     backgroundColor: "#f7faf8",
     marginLeft: 1,
-    width: 90,
+    width: wp(90),
     borderBottomLeftRadius: 5,
     borderBottomRightRadius: 5,
-    height: "55%",
+    height: hp("55%"),
     // borderBottomLeftRadius: 15,
     // borderBottomRightRadius: 15,
 
@@ -818,12 +745,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 15,
-    marginTop: "4%",
-    marginBottom: "2%",
+    marginTop: hp("4%"),
+    marginBottom: hp("2%"),
   },
 
   info: {
-    marginTop: "-10%",
+    marginTop: hp("-10%"),
   },
   exploreText: {
     color: "#fff",
@@ -833,8 +760,8 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   exploreBackground: {
-    width: "95%",
-    height: "38%",
+    width: wp("95%"),
+    height: hp("38%"),
     marginBottom: "3%",
   },
   content: {
@@ -921,10 +848,10 @@ const styles = StyleSheet.create({
   },
   imageList: {
     marginBottom: 10,
-    height: 100,
+    height: hp(100),
   },
   footer: {
-    marginTop: 80,
+    marginTop: hp(80),
     height: "110%",
     width: "110%",
     marginRight: "5%",
@@ -1037,3 +964,5 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Light",
   },
 });
+
+export default CarouselCardItem;
